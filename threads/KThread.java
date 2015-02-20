@@ -28,6 +28,7 @@ import nachos.machine.*;
  * </pre></blockquote>
  */
 public class KThread {
+	private LinkedList<KThread> sleepQueue = new LinkedList<KThread>();
     /**
      * Get the current thread.
      *
@@ -273,10 +274,16 @@ public class KThread {
      * thread.
      */
     public void join() {
-	Lib.debug(dbgThread, "Joining to thread: " + toString());
+    	boolean intStatus = Machine.interrupt().disable();
+		Lib.debug(dbgThread, "Joining to thread: " + toString());
+		Lib.assertTrue(this != currentThread);
+		if(status != statusFinished)
+			return;
+	currentThread.ready();
 
-	Lib.assertTrue(this != currentThread);
-
+	runNextThread();
+	
+	   Machine.interrupt().restore(intStatus);
     }
 
     /**
